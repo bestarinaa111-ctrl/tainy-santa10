@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: tainy-santa
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: DATABASE_URL
+        sync: false

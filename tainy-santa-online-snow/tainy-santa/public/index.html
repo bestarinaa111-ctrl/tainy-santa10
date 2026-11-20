@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#142d27">
+  <meta name="description" content="Создайте игру «Тайный Санта», пригласите друзей и проведите секретную жеребьёвку.">
+  <title>Тайный Санта — время дарить чудеса</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div class="loader" id="loader" aria-label="Загрузка сайта">
+    <div class="loader-snow snow-a">✦</div>
+    <div class="loader-snow snow-b">❄</div>
+    <div class="loader-gift"><span></span><i></i><b></b></div>
+    <div class="loader-brand">Тайный Санта</div>
+    <p>Готовим немного новогоднего чуда…</p>
+    <div class="loader-track"><span></span></div>
+  </div>
+
+  <div class="site-shell" id="site-shell" aria-live="polite">
+    <div class="snowfall" id="snowfall" aria-hidden="true"></div>
+    <div class="santa-flight" aria-hidden="true"><span>🦌</span><span>🛷</span><span>🎅</span></div>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Тайный Санта — на главную">
+        <span class="brand-mark">✳</span>
+        <span>тайный <strong>санта</strong></span>
+      </a>
+      <div class="topbar-note"><span class="topbar-dot"></span> Время дарить чудеса</div>
+    </header>
+    <main id="app" class="main-content"></main>
+    <footer class="footer">
+      <span>Сделано с теплом и щепоткой новогодней магии</span>
+      <span>✦</span>
+    </footer>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
