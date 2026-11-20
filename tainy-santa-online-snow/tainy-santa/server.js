@@ -313,7 +313,9 @@ async function handleApi(req, res, url) {
     if (game.status !== 'open') return sendError(res, 409, 'Жеребьёвка уже началась. Запись закрыта.');
     const body = await readJson(req);
     const name = typeof body.name === 'string' ? body.name.trim().replace(/\s+/g, ' ') : '';
+    const preferences = typeof body.preferences === 'string' ? body.preferences.trim() : '';
     if (name.length < 2 || name.length > 40) return sendError(res, 400, 'Имя должно содержать от 2 до 40 символов.');
+    if (preferences.length > 500) return sendError(res, 400, 'Предпочтения должны быть не длиннее 500 символов.');
     const nameKey = normalizeName(name);
     if (game.participants.length >= 100) return sendError(res, 409, 'В одной игре может быть не больше 100 участников.');
     if (game.participants.some((person) => person.nameKey === nameKey)) {
@@ -325,6 +327,7 @@ async function handleApi(req, res, url) {
       id: participantId,
       name,
       nameKey,
+      preferences,
       tokenHash: hashToken(participantToken),
       recipientId: null,
       createdAt: new Date().toISOString(),
@@ -399,7 +402,14 @@ async function handleApi(req, res, url) {
     }
     const recipient = game.participants.find((person) => person.id === participant.recipientId);
     if (!recipient) return sendError(res, 500, 'Не удалось получить результат. Обратитесь к организатору.');
-    return json(res, 200, { status: 'drawn', recipientName: recipient.name, title: game.title, budget: game.budget, currency: game.currency });
+    return json(res, 200, {
+      status: 'drawn',
+      recipientName: recipient.name,
+      recipientPreferences: recipient.preferences || '',
+      title: game.title,
+      budget: game.budget,
+      currency: game.currency,
+    });
   }
 
   return sendError(res, 404, 'Страница не найдена.');

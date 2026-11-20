@@ -188,6 +188,7 @@ async function renderJoin(code) {
         <div class="notice"><strong>Бюджет подарка:</strong> ${formatBudget(game.budget, game.currency)}<br><strong>Уже записались:</strong> ${game.participantCount}</div>
         <form id="join-form">
           <div class="field"><label for="participant-name">Ваше имя</label><input class="input" id="participant-name" name="name" maxlength="40" minlength="2" placeholder="Как вас будут видеть друзья?" autocomplete="name" required></div>
+          <div class="field"><label for="participant-preferences">Предпочтения в подарках <span class="optional-label">(необязательно)</span></label><textarea class="input preferences-input" id="participant-preferences" name="preferences" maxlength="500" rows="3" placeholder="Например: люблю книги, чай и настольные игры; не хотелось бы сладости."></textarea><p class="field-hint">Это увидит только ваш Тайный Санта после жеребьёвки.</p></div>
           <div id="join-error"></div>
           <button class="button button-primary form-submit" type="submit">Присоединиться к игре <span>✦</span></button>
         </form>
@@ -204,16 +205,19 @@ async function joinGame(event, code) {
   event.preventDefault();
   const form = event.currentTarget;
   const button = form.querySelector('button[type="submit"]');
-  const name = new FormData(form).get('name');
+  const formData = new FormData(form);
+  const name = formData.get('name');
+  const preferences = formData.get('preferences');
   button.disabled = true;
   button.textContent = 'Добавляем вас…';
   document.getElementById('join-error').innerHTML = '';
   try {
     const result = await api(`/api/games/${encodeURIComponent(code)}/join`, {
-      method: 'POST', body: JSON.stringify({ name })
+      method: 'POST', body: JSON.stringify({ name, preferences })
     });
     const personalUrl = `${window.location.origin}/g/${code}/result#${result.participantToken}`;
     renderJoined(personalUrl);
+    playSantaGreeting();
   } catch (error) {
     displayError('#join-error', error.message);
     button.disabled = false;
@@ -221,9 +225,24 @@ async function joinGame(event, code) {
   }
 }
 
+function playSantaGreeting() {
+  if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) return;
+  try {
+    window.speechSynthesis.cancel();
+    const greeting = new SpeechSynthesisUtterance('Хо-хо-хо!');
+    greeting.lang = 'ru-RU';
+    greeting.rate = 0.82;
+    greeting.pitch = 0.55;
+    greeting.volume = 0.9;
+    window.speechSynthesis.speak(greeting);
+  } catch {
+    // Озвучка необязательна: регистрация должна работать и без поддержки речи.
+  }
+}
+
 function renderJoined(personalUrl) {
   setPage(`
-    <div class="panel-wrap"><div class="panel center-page">
+    <div class="panel-wrap"><div class="panel center-page join-success">
       <div class="success-icon">✓</div><span class="eyebrow">Вы в игре</span><h2>Ура, вы записаны!</h2>
       <p class="lead">Теперь сохраните свою личную ссылку. После жеребьёвки по ней можно будет узнать, кому вы дарите подарок.</p>
       <div class="notice"><strong>Не потеряйте эту ссылку.</strong> Восстановить её без регистрации и пароля не получится. Никому не пересылайте её — по ней доступен только ваш результат.</div>
@@ -368,6 +387,7 @@ async function loadPersonalResult(code, token, firstLoad = false) {
           <div class="result-icon">🎁</div><span class="eyebrow">Время готовить сюрприз</span><h2 style="margin-top:16px">Ваша тайна раскрыта</h2>
           <div class="separator"></div><div class="result-label">Вы дарите подарок</div>
           <div class="result-name">${escapeHtml(result.recipientName)}</div>
+          ${result.recipientPreferences ? `<div class="recipient-preferences"><strong>Пожелания к подарку</strong><p>${escapeHtml(result.recipientPreferences).replace(/\n/g, '<br>')}</p></div>` : ''}
           <p class="lead" style="font-size:12px">Пусть ваш подарок принесёт радость и немного волшебства!</p>
           <div class="result-budget">Бюджет подарка: <strong>${formatBudget(result.budget, result.currency)}</strong></div>
         </div><p class="field-hint" style="margin-top:20px">Не показывайте эту страницу другим участникам — сохраните интригу до праздника.</p></div>
